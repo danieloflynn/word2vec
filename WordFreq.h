@@ -12,8 +12,6 @@ public:
     std::string fileName;
     std::unordered_map<std::string, int> wordFreqs;
     std::vector<std::pair<std::string, int>> sortedWordFreq;
-    const double vec_lower_bound = -10000.0;
-    const double vec_upper_bound = 10000.0;
     void countWordFreqs(int head = -1);
     void printWordFreqs();
     void sortWordFreqs();
