@@ -5,19 +5,20 @@
 #include <vector>
 #include <unordered_map>
 
-class WordFreq {
-    public:
-        WordFreq(std::string fileName);
-        std::string fileName;
-        std::unordered_map<std::string, int> wordFreqs;
-        void countWordFreqs();
+class WordFreq
+{
+public:
+    WordFreq(std::string fileName);
+    std::string fileName;
+    std::unordered_map<std::string, int> wordFreqs;
+    std::vector<std::pair<std::string, int>> sortedWordFreq;
+    void countWordFreqs(int head = -1);
+    void printWordFreqs();
+    void sortWordFreqs();
+    void serialize(std::string fileName);
 
+private:
+    bool cmp(std::pair<std::string, int> a, std::pair<std::string, int> b);
 };
-
-
-
-
-
-
 
 #endif
