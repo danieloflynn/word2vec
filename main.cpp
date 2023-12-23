@@ -8,12 +8,19 @@
 int main()
 {
 
-    WordFreq wf("wiki.txt");
-    wf.countFreqFromFile(100000);
-    wf.serialize("dictionary.txt");
-    // Word2Vec wv("dictionary.txt");
-    // wv.makeRandomWordVecs();
-    // int i = 0;
+    // WordFreq wf("wiki.txt");
+    // wf.countFreqFromFile(100000);
+    // wf.serialize("dictionary.txt");
+
+    Word2Vec wv("dictionary.txt");
+    wv.makeRandomWordVecs();
+    wv.makeUnigramFreqs();
+
+    for (int i = 0; i < 100; i++)
+    {
+        std::cout << wv.getRandomWord() << '\n';
+    }
+
     // for (auto wvec : wv.wordVecs)
     // {
     //     std::cout << wvec.first << " " << wvec.second.size();
