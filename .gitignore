@@ -1,0 +1,7 @@
+*.out
+/output.out.dSYM/
+/.vscode/
+.DS_Store
+wikipedia.xml
+*.yml
+*.plist
