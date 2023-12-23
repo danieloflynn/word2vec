@@ -9,7 +9,7 @@ int main()
 {
 
     WordFreq wf("wiki.txt");
-    wf.countWordFreqs(100000);
+    wf.countFreqFromFile(100000);
     wf.serialize("dictionary.txt");
     // Word2Vec wv("dictionary.txt");
     // wv.makeRandomWordVecs();

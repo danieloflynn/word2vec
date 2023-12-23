@@ -12,7 +12,8 @@ public:
     std::string fileName;
     std::unordered_map<std::string, int> wordFreqs;
     std::vector<std::pair<std::string, int>> sortedWordFreq;
-    void countWordFreqs(int head = -1);
+    void countFreqFromFile(int head = -1);
+    void countFreq(std::string text);
     void printWordFreqs();
     void sortWordFreqs();
     void serialize(std::string fileName);

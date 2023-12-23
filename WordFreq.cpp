@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "WordFreq.h"
 
@@ -10,7 +11,7 @@ WordFreq::WordFreq(std::string fileName)
     this->wordFreqs = {};
 }
 
-void WordFreq::countWordFreqs(int head)
+void WordFreq::countFreqFromFile(int head)
 {
     std::string text;
     std::fstream myFile(fileName);
@@ -18,41 +19,39 @@ void WordFreq::countWordFreqs(int head)
     {
         while (getline(myFile, text))
         {
-            stringstream ss(text);
-            while (getline(ss, text, ' '))
-            {
-                if (wordFreqs.find(text) != wordFreqs.end())
-                {
-                    wordFreqs[text] += 1;
-                }
-                else
-                {
-                    wordFreqs[text] = 1;
-                }
-            }
+            countFreq(text);
         }
     }
     else
     {
         for (int i = 0; i < head; i++)
         {
-            if (!getline(myFile, text, ' '))
+            if (!getline(myFile, text))
             {
                 break;
             }
-
-            if (wordFreqs.find(text) != wordFreqs.end())
-            {
-                wordFreqs[text] += 1;
-            }
-            else
-            {
-                wordFreqs[text] = 1;
-            }
+            countFreq(text);
         }
     }
 
     std::cout << "Finished counting word frequencies." << '\n';
+}
+
+void WordFreq::countFreq(std::string text)
+{
+    std::stringstream ss(text);
+    while (getline(ss, text, ' '))
+    {
+
+        if (wordFreqs.find(text) != wordFreqs.end())
+        {
+            wordFreqs[text] += 1;
+        }
+        else
+        {
+            wordFreqs[text] = 1;
+        }
+    }
 }
 
 void WordFreq::printWordFreqs()
