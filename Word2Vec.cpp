@@ -29,22 +29,26 @@ Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, in
 }
 
 /*
-Makes random word vectors for each word in the dictionary
+Makes random word and context vectors for each word in the dictionary
 These will be optimized in training
 */
-void Word2Vec::makeRandomWordVecs()
+void Word2Vec::makeRandomVecs()
 {
     std::uniform_real_distribution<double> unif(vec_lower_bound, vec_upper_bound);
     std::default_random_engine re;
     for (std::string word : dictionary)
     {
         std::vector<double> wordVec;
+        std::vector<double> contVec;
         for (int i = 0; i < dimension; i++)
         {
             double random_double = unif(re);
             wordVec.push_back(random_double);
+            random_double = unif(re);
+            contVec.push_back(random_double);
         }
         wordVecs[word] = wordVec;
+        contextVecs[word] = contVec;
     }
 }
 
@@ -89,6 +93,78 @@ std::string Word2Vec::getRandomWord()
 {
     // need to subtract 1 because unigram dist goes from 1 - dict.size().
     return dictionary[unigram_dist(rd) - 1];
+}
+
+// returns vector multiplied by scalar
+std::vector<double> Word2Vec::scalarMult(std::vector<double> &vec, double scalar)
+{
+    std::vector<double> newVec;
+
+    for (double &num : vec)
+    {
+        newVec.push_back(num * scalar);
+    }
+
+    return newVec;
+}
+
+// Add two vectors and return the result
+std::vector<double> Word2Vec::vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2)
+{
+    // If vectors are different sizes print error and return null vector
+    if (vec1.size() != vec2.size())
+    {
+        std::cout << "Error: vectors are different sizes." << '\n';
+        return {};
+    }
+
+    std::vector<double> newVec;
+
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        newVec.push_back(vec1[i] + vec2[i]);
+    }
+
+    return newVec;
+}
+
+// Gets the dot product of two vectors
+double Word2Vec::dotProd(std::vector<double> &vec1, std::vector<double> &vec2)
+{
+    if (vec1.size() != vec2.size())
+    {
+        std::cout << "Error: vectors are different sizes." << '\n';
+        return 0.0;
+    }
+
+    double total = 0;
+
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        total += vec1[i] * vec2[i];
+    }
+
+    return total;
+}
+
+/*
+Returns sigmoid of the number.
+sigmoid(x) = 1/(1+e^(-x))
+*/
+double Word2Vec::sigmoid(double num)
+{
+    return 1 / (1 + exp(-num));
+}
+
+/*
+Updates the positive context vector.
+c_pos(t+1) = c_pos(t) - learn_rate * [sigmoid(c_pos(t)*w(t)) - 1] w(t)
+*/
+void Word2Vec::updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec)
+{
+    double scalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
+    std::vector<double> newVec = scalarMult(wVec, scalar);
+    cPosVec = vectorAdd(cPosVec, newVec);
 }
 
 void Word2Vec::train(std::string trainingText)

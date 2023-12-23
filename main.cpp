@@ -13,10 +13,10 @@ int main()
     // wf.serialize("dictionary.txt");
 
     Word2Vec wv("dictionary.txt");
-    wv.makeRandomWordVecs();
+    wv.makeRandomVecs();
     wv.makeUnigramFreqs();
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 1000; i++)
     {
         std::cout << wv.getRandomWord() << '\n';
     }
