@@ -8,7 +8,6 @@ WordFreq::WordFreq(std::string fileName)
 {
     this->fileName = fileName;
     this->wordFreqs = {};
-    std::cout << "Initialization complete." << '\n';
 }
 
 void WordFreq::countWordFreqs(int head)
@@ -49,6 +48,8 @@ void WordFreq::countWordFreqs(int head)
             }
         }
     }
+
+    std::cout << "Finished counting word frequencies." << '\n';
 }
 
 void WordFreq::printWordFreqs()
@@ -67,4 +68,20 @@ void WordFreq::sortWordFreqs()
     };
     sortedWordFreq.assign(wordFreqs.begin(), wordFreqs.end());
     sort(sortedWordFreq.begin(), sortedWordFreq.end(), cmp);
+}
+
+void WordFreq::serialize(std::string fileName)
+{
+    if (empty(sortedWordFreq))
+    {
+        sortWordFreqs();
+    }
+    std::ofstream newFile(fileName);
+    for (auto &word : sortedWordFreq)
+    {
+        if (word.first != "")
+        {
+            newFile << word.first << " " << word.second << '\n';
+        }
+    }
 }
