@@ -16,16 +16,19 @@ void WordFreq::countWordFreqs(int head)
     std::fstream myFile(fileName);
     if (head == -1)
     {
-        while (getline(myFile, text, ' '))
+        while (getline(myFile, text))
         {
-
-            if (wordFreqs.find(text) != wordFreqs.end())
+            stringstream ss(text);
+            while (getline(ss, text, ' '))
             {
-                wordFreqs[text] += 1;
-            }
-            else
-            {
-                wordFreqs[text] = 1;
+                if (wordFreqs.find(text) != wordFreqs.end())
+                {
+                    wordFreqs[text] += 1;
+                }
+                else
+                {
+                    wordFreqs[text] = 1;
+                }
             }
         }
     }
