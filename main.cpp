@@ -13,10 +13,12 @@ int main()
     // wf.serialize("sample_dict.txt");
 
     // std::cout << "Finished getting freq dictionary" << '\n';
-    Word2Vec wv("dictionary.txt");
+    Word2Vec wv("sample_dict.txt");
     wv.makeRandomVecs();
     wv.makeUnigramFreqs();
-    wv.train("wiki.txt");
+    wv.train("sample.txt");
+    wv.writeContextVecsToFile("cVecs.txt");
+    wv.writeWordVecsToFile("wVecs.txt");
     // for (int i = 0; i < 1000; i++)
     // {
 

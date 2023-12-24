@@ -59,6 +59,44 @@ void Word2Vec::makeRandomVecs()
     std::cout << "Finished making random word and context vectors." << '\n';
 }
 
+void Word2Vec::writeContextVecsToFile(std::string fileName)
+{
+    std::ofstream newFile(fileName);
+    for (auto &word : contextVecs)
+    {
+        if (word.first != "")
+        {
+            newFile << word.first << " ";
+            for (auto &vec : word.second)
+            {
+                newFile << vec << " ";
+            }
+            newFile << '\n';
+        }
+    }
+
+    newFile.close();
+}
+
+void Word2Vec::writeWordVecsToFile(std::string fileName)
+{
+    std::ofstream newFile(fileName);
+    for (auto &word : wordVecs)
+    {
+        if (word.first != "")
+        {
+            newFile << word.first << " ";
+            for (auto &vec : word.second)
+            {
+                newFile << vec << " ";
+            }
+            newFile << '\n';
+        }
+    }
+
+    newFile.close();
+}
+
 /*
 Makes a vector of unigram frequencies of each word to be used in picking noise words.
 Per the book, probability of picking a word:
@@ -276,8 +314,6 @@ void Word2Vec::train(std::string trainingText)
             continue;
         }
 
-        std::cout << "Num words: " << words.size() << '\n';
-
         // Now iterate over the sliding window
         for (int i = 0; i < words.size(); i++)
         {
@@ -314,7 +350,6 @@ void Word2Vec::train(std::string trainingText)
             // Prev words
             for (std::string cPosWord : prevWords)
             {
-                std::cout << "Updating words: " << cPosWord << " " << currWord << '\n';
                 // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
                 // {
                 //     breaking = true;
@@ -326,7 +361,6 @@ void Word2Vec::train(std::string trainingText)
             // Next words
             for (std::string cPosWord : nextWords)
             {
-                std::cout << "Updating words: " << cPosWord << " " << currWord << '\n';
                 // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
                 // {
                 //     breaking = true;
