@@ -62,7 +62,10 @@ void WordFreq::countFreq(std::string text)
     while (getline(ss, text, ' '))
     {
         cleanText(text);
-
+        if (text.size() == 0)
+        {
+            continue;
+        }
         if (wordFreqs.find(text) != wordFreqs.end())
         {
             wordFreqs[text] += 1;

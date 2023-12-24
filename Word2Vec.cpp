@@ -324,7 +324,11 @@ void Word2Vec::train(std::string trainingText)
         while (getline(ss, text, ' '))
         {
             cleanText(text);
-            words.push_back(text);
+            if (text.size() > 0)
+            {
+
+                words.push_back(text);
+            }
         }
 
         // Check that at least 2 words are present
@@ -387,19 +391,8 @@ void Word2Vec::train(std::string trainingText)
                 // }
                 updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
             }
-            if (breaking)
-            {
-                break;
-            }
         }
-        if (breaking)
-        {
-            break;
-        }
-        if (lineCount > 3)
-        {
-            break;
-        }
+
         if (lineCount % 10 == 0)
         {
             std::cout << "Training: line " << lineCount << '\n';
