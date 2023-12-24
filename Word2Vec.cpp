@@ -1,9 +1,11 @@
+#include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
+#include <sstream>
 #include <unordered_map>
-#include <fstream>
 #include <random>
+#include <vector>
 
 #include "Word2Vec.h"
 
@@ -201,19 +203,110 @@ void Word2Vec::updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVe
     wVec = newWVec;
 }
 
+/*
+Takes a positive context vector and word vector.
+Creates k negative context vector.
+Updates the positive, negative and word vectors using the update equations.
+*/
+void Word2Vec::updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec)
+{
+    // First, get random negative context vectors.
+    std::vector<std::vector<double> *> cNegVecs;
+    for (int i = 0; i < ratio_neg_context_vectors; i++)
+    {
+        std::string randWord = getRandomWord();
+        cNegVecs.push_back(&contextVecs[randWord]);
+    }
+
+    // update positive context vectors
+    updateCPosVec(cPosVec, wVec);
+
+    // update negative context vectors
+    for (std::vector<double> *cNegVec : cNegVecs)
+    {
+        updateCNegVec(*cNegVec, wVec);
+    }
+
+    // Update the word vector
+    updateWVec(wVec, cPosVec, cNegVecs);
+}
+
+/*
+Implements the training for skip-gram embeddings.
+Takes each line in the training corpus individually.
+We look window_size words either side of our target word and treat these as our positive context vectors.
+We then feed our positive context vector and word vector into the vector learning algorithm
+This adds k random negative context vectors (random words from the corpus).
+We update the target word vector to be closer to the positive context vectors and vice versa,
+and also update the target word vector to be further away from the negative context vectors and vice versa.
+*/
 void Word2Vec::train(std::string trainingText)
 {
     // Read in text
     std::fstream myFile(trainingText);
     std::string text;
-    std::string currWord;
-    std::vector<std::string> prevWords;
-    std::vector<std::string> nextWords;
+    int lineCount = 0;
+    // Get a line
+    while (getline(myFile, text))
+    {
+        std::vector<std::string> words;
+        std::stringstream ss(text);
+        std::string currWord;
+        std::vector<std::string> prevWords;
+        std::vector<std::string> nextWords;
 
-    // // Get the first words for the window size
-    // for (int i = 0; i < window_size; i++)
-    // {
-    //     getline(myFile, text, ' ');
-    //     slidingWindow.push_back(text);
-    // }
+        while (getline(ss, text, ' '))
+        {
+            words.push_back(text);
+        }
+        // Now iterate over the sliding window
+        for (int i = 0; i < words.size(); i++)
+        {
+            // If current word there, add to prev words
+            if (!currWord.empty())
+            {
+                prevWords.push_back(currWord);
+            }
+            // If prevWords vector is greater than the window size, remove the first element.
+            if (prevWords.size() > window_size)
+            {
+                prevWords.erase(prevWords.begin());
+            }
+
+            // Set the current word to the next word in the sequence
+            currWord = words[i];
+
+            // Add extra words to the "next words" if we're at the start
+            if (i == 0)
+            {
+                for (int j = 1; j < std::min(words.size() - 1, static_cast<size_t>(window_size)); j++)
+                {
+                    nextWords.push_back(words[j]);
+                }
+            }
+
+            // If we are not at the end of the string of text, add the next
+            if (i + window_size < words.size())
+            {
+                nextWords.push_back(words[i + window_size]);
+            }
+
+            // Now update the model using each of the positive context vectors
+            // Prev words
+            for (std::string cPosWord : prevWords)
+            {
+                updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
+            }
+
+            // Next words
+            for (std::string cPosWord : nextWords)
+            {
+                updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
+            }
+        }
+        if (lineCount % 100 == 0)
+        {
+            std::cout << "Training: line " << lineCount << '\n';
+        }
+    }
 }

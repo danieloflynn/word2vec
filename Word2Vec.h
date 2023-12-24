@@ -13,8 +13,9 @@ public:
     int dimension;
     const double vec_lower_bound = -10000.0;
     const double vec_upper_bound = 10000.0;
-    const double learning_rate = 0.1; // Set this to 0.1 per book
-    const int window_size = 2;        // Size of window on either side
+    const double learning_rate = 0.1;        // Set this to 0.1 per book
+    const int window_size = 2;               // number of words to look at either side of the current word
+    const int ratio_neg_context_vectors = 2; // Ratio of negative to positive context vectors
     static std::random_device rd;
     std::vector<std::string> dictionary;
     std::vector<std::pair<std::string, int>> wordFreqs;
@@ -33,6 +34,7 @@ public:
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
     void updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs);
+    void updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec);
     void train(std::string trainingText);
     void serialize(std::string outputFile);
 };
