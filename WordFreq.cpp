@@ -11,6 +11,25 @@ WordFreq::WordFreq(std::string fileName)
     this->wordFreqs = {};
 }
 
+// Returns false if char is a num, letter, or -, true otherwise
+inline int WordFreq::isPunctuation(char &text)
+{
+    // if (text == '-')
+    // {
+    //     return 0;
+    // }
+    return ispunct(text);
+}
+
+// Remove unnecessary punctuation from text and make it lowercase
+void WordFreq::cleanText(std::string &text)
+{
+    text.erase(std::remove_if(text.begin(), text.end(), ::ispunct), text.end());
+    std::transform(text.begin(), text.end(), text.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+}
+
 void WordFreq::countFreqFromFile(int head)
 {
     std::string text;
@@ -42,6 +61,7 @@ void WordFreq::countFreq(std::string text)
     std::stringstream ss(text);
     while (getline(ss, text, ' '))
     {
+        cleanText(text);
 
         if (wordFreqs.find(text) != wordFreqs.end())
         {

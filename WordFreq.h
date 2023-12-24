@@ -12,6 +12,8 @@ public:
     std::string fileName;
     std::unordered_map<std::string, int> wordFreqs;
     std::vector<std::pair<std::string, int>> sortedWordFreq;
+    inline int isPunctuation(char &text);
+    void cleanText(std::string &text);
     void countFreqFromFile(int head = -1);
     void countFreq(std::string text);
     void printWordFreqs();

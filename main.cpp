@@ -8,15 +8,15 @@
 int main()
 {
 
-    // WordFreq wf("sample.txt");
-    // wf.countFreqFromFile();
-    // wf.serialize("sample_dict.txt");
+    WordFreq wf("wiki.txt");
+    wf.countFreqFromFile();
+    wf.serialize("dictionary.txt");
 
     // std::cout << "Finished getting freq dictionary" << '\n';
-    Word2Vec wv("sample_dict.txt");
+    Word2Vec wv("dictionary.txt");
     wv.makeRandomVecs();
     wv.makeUnigramFreqs();
-    wv.train("sample.txt");
+    wv.train("wiki.txt");
     wv.writeContextVecsToFile("cVecs.txt");
     wv.writeWordVecsToFile("wVecs.txt");
     // for (int i = 0; i < 1000; i++)

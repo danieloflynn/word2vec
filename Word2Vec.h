@@ -23,6 +23,8 @@ public:
     std::unordered_map<std::string, std::vector<double>> contextVecs;
     std::vector<std::pair<std::string, double>> unigram_freqs;
     std::discrete_distribution<> unigram_dist;
+    inline int isPunctuation(char &text);
+    void cleanText(std::string &text);
     void makeRandomVecs();
     void writeContextVecsToFile(std::string fileName);
     void writeWordVecsToFile(std::string fileName);

@@ -31,6 +31,24 @@ Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, in
     }
 }
 
+// Returns false if char is a num, letter, or -, true otherwise
+inline int Word2Vec::isPunctuation(char &text)
+{
+    // if(text == '-'){
+    //     return 0;
+    // }
+    return ispunct(text);
+}
+
+// Remove unnecessary punctuation from text
+void Word2Vec::cleanText(std::string &text)
+{
+    text.erase(std::remove_if(text.begin(), text.end(), ::ispunct), text.end());
+    std::transform(text.begin(), text.end(), text.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+}
+
 /*
 Makes random word and context vectors for each word in the dictionary
 These will be optimized in training
@@ -305,6 +323,7 @@ void Word2Vec::train(std::string trainingText)
         // Add all the words to a vector
         while (getline(ss, text, ' '))
         {
+            cleanText(text);
             words.push_back(text);
         }
 
