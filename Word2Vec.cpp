@@ -158,13 +158,47 @@ double Word2Vec::sigmoid(double num)
 
 /*
 Updates the positive context vector.
-c_pos(t+1) = c_pos(t) - learn_rate * [sigmoid(c_pos(t)*w(t)) - 1] w(t)
+c_pos(t+1) = c_pos(t) - learn_rate * [sigmoid(c_neg(t)*w(t)) - 1] w(t)
 */
 void Word2Vec::updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec)
 {
     double scalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
     std::vector<double> newVec = scalarMult(wVec, scalar);
     cPosVec = vectorAdd(cPosVec, newVec);
+}
+
+/*
+Updates the negative context vector.
+c_neg(t+1) = c_neg(t) - learn_rate * [sigmoid(c_pos(t)*w(t))] w(t)
+*/
+void Word2Vec::updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec)
+{
+    double scalar = -learning_rate * (sigmoid(dotProd(cNegVec, wVec)));
+    std::vector<double> newVec = scalarMult(wVec, scalar);
+    cNegVec = vectorAdd(cNegVec, newVec);
+}
+
+/*
+Updates the word vector
+w(t+1) = w(t) - learn_rate[ [sigmoid(c_pos(t)*w(t)) - 1] c_pos + sum_all_c_neg(sigmoid(c_neg(t)*w(t)) - 1) c_neg ]
+*/
+void Word2Vec::updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs)
+{
+
+    // Add the c_pos part
+    double cPosScalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
+    std::vector<double> cPosVecPart = scalarMult(cPosVec, cPosScalar);
+    std::vector<double> newWVec = vectorAdd(wVec, cPosVecPart); // Make new word vector as we need the old one to calculate cNegVecPart
+
+    // add each cNeg vector to the new w vector
+    for (std::vector<double> *&cNegVec : cNegVecs)
+    {
+        double cNegScalar = -learning_rate * (sigmoid(dotProd((*cNegVec), wVec)));
+        std::vector<double> cNegVecPart = scalarMult(*cNegVec, cNegScalar);
+        newWVec = vectorAdd(newWVec, cNegVecPart);
+    }
+    // Now change wVec to the new word vec
+    wVec = newWVec;
 }
 
 void Word2Vec::train(std::string trainingText)
