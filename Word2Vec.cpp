@@ -27,6 +27,7 @@ Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, in
                 wordFreqs.push_back({text, stoi(count)});
             }
         }
+        std::cout << "Successfully read in freq dictionary" << '\n';
     }
 }
 
@@ -36,6 +37,8 @@ These will be optimized in training
 */
 void Word2Vec::makeRandomVecs()
 {
+    std::cout << "Making random word and context vectors." << '\n';
+
     std::uniform_real_distribution<double> unif(vec_lower_bound, vec_upper_bound);
     std::default_random_engine re;
     for (std::string word : dictionary)
@@ -52,6 +55,8 @@ void Word2Vec::makeRandomVecs()
         wordVecs[word] = wordVec;
         contextVecs[word] = contVec;
     }
+
+    std::cout << "Finished making random word and context vectors." << '\n';
 }
 
 /*
@@ -64,6 +69,7 @@ P_alpha(word_i) = count(word_i)^alpha/sum(count(word_i)^alpha for all words)
 
 void Word2Vec::makeUnigramFreqs(double alpha)
 {
+    std::cout << "Making unigram distributions" << '\n';
     double totalFreq = 0;
     std::vector<double> freqs;
     // Add freq to the power of alpha to unigram freqs
@@ -74,7 +80,6 @@ void Word2Vec::makeUnigramFreqs(double alpha)
     }
 
     // Now divide every element by the sum of all counts to the power of alpha for normalization
-    std::cout << "Old word 1: " << unigram_freqs[0].second << '\n';
     for (std::pair<std::string, double> &word : unigram_freqs)
     {
         word.second /= totalFreq;
@@ -84,6 +89,7 @@ void Word2Vec::makeUnigramFreqs(double alpha)
     // Create a discrete_distribution for use in getRandomWord
     std::discrete_distribution<> dist(freqs.begin(), freqs.end());
     unigram_dist = dist;
+    std::cout << "Finished making unigram distributions" << '\n';
 }
 
 std::random_device Word2Vec::rd;
@@ -93,8 +99,8 @@ Returns a random word, probability freq based on the unigram distribution descri
 */
 std::string Word2Vec::getRandomWord()
 {
-    // need to subtract 1 because unigram dist goes from 1 - dict.size().
-    return dictionary[unigram_dist(rd) - 1];
+
+    return dictionary[unigram_dist(rd)];
 }
 
 // returns vector multiplied by scalar
@@ -164,6 +170,7 @@ c_pos(t+1) = c_pos(t) - learn_rate * [sigmoid(c_neg(t)*w(t)) - 1] w(t)
 */
 void Word2Vec::updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec)
 {
+
     double scalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
     std::vector<double> newVec = scalarMult(wVec, scalar);
     cPosVec = vectorAdd(cPosVec, newVec);
@@ -246,6 +253,7 @@ void Word2Vec::train(std::string trainingText)
     std::fstream myFile(trainingText);
     std::string text;
     int lineCount = 0;
+    bool breaking = false;
     // Get a line
     while (getline(myFile, text))
     {
@@ -255,10 +263,21 @@ void Word2Vec::train(std::string trainingText)
         std::vector<std::string> prevWords;
         std::vector<std::string> nextWords;
 
+        std::cout << "Line " << lineCount << '\n';
+        // Add all the words to a vector
         while (getline(ss, text, ' '))
         {
             words.push_back(text);
         }
+
+        // Check that at least 2 words are present
+        if (words.size() < 2)
+        {
+            continue;
+        }
+
+        std::cout << "Num words: " << words.size() << '\n';
+
         // Now iterate over the sliding window
         for (int i = 0; i < words.size(); i++)
         {
@@ -295,18 +314,43 @@ void Word2Vec::train(std::string trainingText)
             // Prev words
             for (std::string cPosWord : prevWords)
             {
+                std::cout << "Updating words: " << cPosWord << " " << currWord << '\n';
+                // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
+                // {
+                //     breaking = true;
+                //     break;
+                // }
                 updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
             }
 
             // Next words
             for (std::string cPosWord : nextWords)
             {
+                std::cout << "Updating words: " << cPosWord << " " << currWord << '\n';
+                // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
+                // {
+                //     breaking = true;
+                //     break;
+                // }
                 updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
             }
+            if (breaking)
+            {
+                break;
+            }
         }
-        if (lineCount % 100 == 0)
+        if (breaking)
+        {
+            break;
+        }
+        if (lineCount > 3)
+        {
+            break;
+        }
+        if (lineCount % 10 == 0)
         {
             std::cout << "Training: line " << lineCount << '\n';
         }
+        lineCount++;
     }
 }

@@ -24,8 +24,13 @@ public:
     std::vector<std::pair<std::string, double>> unigram_freqs;
     std::discrete_distribution<> unigram_dist;
     void makeRandomVecs();
-    void getTotalWordCount();
+    void writeVecsToFile();
+    void readContextVecsFromFile();
+    void readWordVecsFromFile(std::string fileName);
+    void getTotalWordCount(std::string fileName);
     void makeUnigramFreqs(double alpha = 0.75);
+    void writeUnigramFreqsToFile(std::string fileName);
+    void readUnigramFreqsFromFile(std::string fileName);
     std::string getRandomWord();
     std::vector<double> scalarMult(std::vector<double> &vec, double scalar);
     std::vector<double> vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2);
