@@ -293,10 +293,41 @@ double Word2Vec::sigmoid(double num)
 }
 
 /*
-Returns a list of similar words to the target word
+Returns a list of similar words to the target word.
+Similarity is calculated via the sigmoid function.
 */
 std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::string word)
 {
+    // Make sure word exists in dictionary
+    if (dictSet.find(word) == dictSet.end())
+    {
+        std::cout << "Error: word not in dictionary" << '\n';
+        return {};
+    }
+
+    std::vector<std::pair<std::string, double>> wordSimilarity;
+
+    std::vector<double> wVec = wordVecs[word];
+
+    for (auto w : wordVecs)
+    {
+        if (w.first == word)
+        {
+            continue;
+        }
+
+        double sim = sigmoid(dotProd(wVec, w.second));
+        wordSimilarity.push_back({w.first, sim});
+    }
+
+    // Sort by similarity
+
+    auto cmp = [](const std::pair<std::string, double> &a, const std::pair<std::string, double> &b)
+    {
+        return (a.second > b.second);
+    };
+    sort(wordSimilarity.begin(), wordSimilarity.end(), cmp);
+    return wordSimilarity;
 }
 
 /*
