@@ -24,10 +24,11 @@ Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, in
             if (stoi(count) >= minCount)
             {
                 dictionary.push_back(text);
+                dictSet.insert(text);
                 wordFreqs.push_back({text, stoi(count)});
             }
         }
-        std::cout << "Successfully read in freq dictionary" << '\n';
+        std::cout << "Successfully read in freq dictionary." << '\n';
     }
 }
 
@@ -115,6 +116,77 @@ void Word2Vec::writeWordVecsToFile(std::string fileName)
     newFile.close();
 }
 
+/*Reads in the context vectors from file
+Context vec consists of word, followed vector of space delimited doubles
+*/
+
+void Word2Vec::readContextVecsFromFile(std::string fileName)
+{
+    std::cout << "Reading in context vectors..." << '\n';
+    contextVecs = {}; // Clear context vecs
+    std::fstream myFile(fileName);
+    std::string text;
+    std::string word;
+
+    // Get line
+    while (getline(myFile, text))
+    {
+        std::vector<double> vec;
+
+        // First item in line is the word
+        std::stringstream ss(text);
+        getline(ss, word, ' ');
+        if (dictSet.find(word) == dictSet.end())
+        {
+            // std::cout << word << " not in dict" << '\n';
+            continue;
+        }
+
+        // Rest are the vector
+        while (getline(ss, text, ' '))
+        {
+            vec.push_back(stod(text));
+        }
+        contextVecs[word] = vec;
+    }
+    std::cout << "Successfully read in context vectors." << '\n';
+}
+
+/*Reads in the word vectors from file
+Word vec consists of word, followed vector of space delimited doubles
+*/
+
+void Word2Vec::readWordVecsFromFile(std::string fileName)
+{
+    std::cout << "Reading in word vectors..." << '\n';
+    wordVecs = {};
+    std::fstream myFile(fileName);
+    std::string text;
+    std::string word;
+
+    // Get line
+    while (getline(myFile, text))
+    {
+        std::vector<double> vec;
+
+        // First item in line is the word
+        std::stringstream ss(text);
+        getline(ss, word, ' ');
+        if (dictSet.find(word) == dictSet.end())
+        {
+            // std::cout << word << " not in dict" << '\n';
+            continue;
+        }
+
+        // Rest are the vector
+        while (getline(ss, text, ' '))
+        {
+            vec.push_back(stod(text));
+        }
+        wordVecs[word] = vec;
+    }
+    std::cout << "Successfully read in word vectors." << '\n';
+}
 /*
 Makes a vector of unigram frequencies of each word to be used in picking noise words.
 Per the book, probability of picking a word:
@@ -218,6 +290,13 @@ sigmoid(x) = 1/(1+e^(-x))
 double Word2Vec::sigmoid(double num)
 {
     return 1 / (1 + exp(-num));
+}
+
+/*
+Returns a list of similar words to the target word
+*/
+std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::string word)
+{
 }
 
 /*

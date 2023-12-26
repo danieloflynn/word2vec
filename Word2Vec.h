@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <random>
 
 class Word2Vec
@@ -18,6 +19,7 @@ public:
     const int ratio_neg_context_vectors = 2; // Ratio of negative to positive context vectors
     static std::random_device rd;
     std::vector<std::string> dictionary;
+    std::unordered_set<std::string> dictSet;
     std::vector<std::pair<std::string, int>> wordFreqs;
     std::unordered_map<std::string, std::vector<double>> wordVecs;
     std::unordered_map<std::string, std::vector<double>> contextVecs;
@@ -39,6 +41,7 @@ public:
     std::vector<double> vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2);
     double dotProd(std::vector<double> &vec1, std::vector<double> &vec2);
     double sigmoid(double num);
+    std::vector<std::pair<std::string, double>> calcSimilarWords(std::string word);
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
     void updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs);
