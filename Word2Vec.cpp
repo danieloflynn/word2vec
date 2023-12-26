@@ -303,7 +303,7 @@ This adds k random negative context vectors (random words from the corpus).
 We update the target word vector to be closer to the positive context vectors and vice versa,
 and also update the target word vector to be further away from the negative context vectors and vice versa.
 */
-void Word2Vec::train(std::string trainingText)
+void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::string wVecOutput)
 {
     // Read in text
     std::fstream myFile(trainingText);
@@ -393,9 +393,12 @@ void Word2Vec::train(std::string trainingText)
             }
         }
 
-        if (lineCount % 10 == 0)
+        // Save state every 5k lines trained
+        if (lineCount % 5000 == 0)
         {
             std::cout << "Training: line " << lineCount << '\n';
+            writeContextVecsToFile(cVecOutput);
+            writeWordVecsToFile(wVecOutput);
         }
         lineCount++;
     }
