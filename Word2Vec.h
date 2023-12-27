@@ -17,6 +17,9 @@ public:
     const double learning_rate = 0.1;        // Set this to 0.1 per book
     const int window_size = 2;               // number of words to look at either side of the current word
     const int ratio_neg_context_vectors = 2; // Ratio of negative to positive context vectors
+    double dotProdTime = 0;
+    double scalarMultTime = 0;
+    double sigmoidTime = 0;
     static std::random_device rd;
     std::vector<std::string> dictionary;
     std::unordered_set<std::string> dictSet;
@@ -38,12 +41,13 @@ public:
     void readUnigramFreqsFromFile(std::string fileName);
     std::string getRandomWord();
     std::vector<double> scalarMult(std::vector<double> &vec, double scalar);
-    std::vector<double> vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2);
+    void vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2);
     double dotProd(std::vector<double> &vec1, std::vector<double> &vec2);
     double sigmoid(double num);
     std::vector<std::pair<std::string, double>> calcSimilarWords(std::string word);
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
+    void updateCNegVecs(std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec);
     void updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs);
     void updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec);
     void train(std::string trainingText, std::string cVecOutput, std::string wVecOutput);

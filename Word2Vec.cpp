@@ -7,6 +7,7 @@
 #include <random>
 #include <vector>
 #include <chrono>
+#include <thread>
 
 #include "Word2Vec.h"
 
@@ -258,29 +259,26 @@ std::vector<double> Word2Vec::scalarMult(std::vector<double> &vec, double scalar
     return newVec;
 }
 
-// Add two vectors and return the result
-std::vector<double> Word2Vec::vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2)
+// Add the second vector to the first
+void Word2Vec::vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2)
 {
     // If vectors are different sizes print error and return null vector
     if (vec1.size() != vec2.size())
     {
         std::cout << "Error: vectors are different sizes." << '\n';
-        return {};
+        return;
     }
-
-    std::vector<double> newVec;
 
     for (int i = 0; i < vec1.size(); i++)
     {
-        newVec.push_back(vec1[i] + vec2[i]);
+        vec1[i] += vec2[i];
     }
-
-    return newVec;
 }
 
 // Gets the dot product of two vectors
 double Word2Vec::dotProd(std::vector<double> &vec1, std::vector<double> &vec2)
 {
+
     if (vec1.size() != vec2.size())
     {
         std::cout << "Error: vectors are different sizes." << '\n';
@@ -353,7 +351,7 @@ void Word2Vec::updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &
 
     double scalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
     std::vector<double> newVec = scalarMult(wVec, scalar);
-    cPosVec = vectorAdd(cPosVec, newVec);
+    vectorAdd(cPosVec, newVec);
 }
 
 /*
@@ -364,7 +362,17 @@ void Word2Vec::updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &
 {
     double scalar = -learning_rate * (sigmoid(dotProd(cNegVec, wVec)));
     std::vector<double> newVec = scalarMult(wVec, scalar);
-    cNegVec = vectorAdd(cNegVec, newVec);
+    vectorAdd(cNegVec, newVec);
+}
+
+void Word2Vec::updateCNegVecs(std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec)
+{
+    for (int i = 0; i < ratio_neg_context_vectors; i++)
+    {
+        std::string randWord = getRandomWord();
+        cNegVecs.push_back(&contextVecs[randWord]);
+        updateCNegVec(contextVecs[randWord], wVec);
+    }
 }
 
 /*
@@ -377,14 +385,15 @@ void Word2Vec::updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVe
     // Add the c_pos part
     double cPosScalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
     std::vector<double> cPosVecPart = scalarMult(cPosVec, cPosScalar);
-    std::vector<double> newWVec = vectorAdd(wVec, cPosVecPart); // Make new word vector as we need the old one to calculate cNegVecPart
+    std::vector<double> newWVec = wVec;
+    vectorAdd(newWVec, cPosVecPart); // Make new word vector as we need the old one to calculate cNegVecPart
 
     // add each cNeg vector to the new w vector
     for (std::vector<double> *&cNegVec : cNegVecs)
     {
         double cNegScalar = -learning_rate * (sigmoid(dotProd((*cNegVec), wVec)));
         std::vector<double> cNegVecPart = scalarMult(*cNegVec, cNegScalar);
-        newWVec = vectorAdd(newWVec, cNegVecPart);
+        vectorAdd(newWVec, cNegVecPart);
     }
     // Now change wVec to the new word vec
     wVec = newWVec;
@@ -397,22 +406,13 @@ Updates the positive, negative and word vectors using the update equations.
 */
 void Word2Vec::updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec)
 {
+
     // First, get random negative context vectors.
     std::vector<std::vector<double> *> cNegVecs;
-    for (int i = 0; i < ratio_neg_context_vectors; i++)
-    {
-        std::string randWord = getRandomWord();
-        cNegVecs.push_back(&contextVecs[randWord]);
-    }
+    updateCNegVecs(cNegVecs, wVec);
 
     // update positive context vectors
     updateCPosVec(cPosVec, wVec);
-
-    // update negative context vectors
-    for (std::vector<double> *cNegVec : cNegVecs)
-    {
-        updateCNegVec(*cNegVec, wVec);
-    }
 
     // Update the word vector
     updateWVec(wVec, cPosVec, cNegVecs);
