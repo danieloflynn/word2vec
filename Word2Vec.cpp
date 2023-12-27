@@ -70,13 +70,14 @@ void Word2Vec::makeRandomVecs()
         for (int i = 0; i < dimension; i++)
         {
             double random_double = unif(re);
-            wordTotal += random_double;
+            wordTotal += abs(random_double);
             wordVec.push_back(random_double);
             random_double = unif(re);
-            contextTotal += random_double;
+            contextTotal += abs(random_double);
             contVec.push_back(random_double);
         }
 
+        // Divide each vector by total to get softmaxed value
         for (int i = 0; i < dimension; i++)
         {
             wordVec[i] /= wordTotal;
