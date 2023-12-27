@@ -524,11 +524,11 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             writeWordVecsToFile(wVecOutput);
 
             auto totalStop = std::chrono::high_resolution_clock::now();
-            double totalTime = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-            std::cout << "stringReadTime " << stringReadTime / 1000 << '\n';
-            std::cout << "slidingWindowTime " << slidingWindowTime / 1000 << '\n';
-            std::cout << "learnTime  " << learnTime / 1000 << '\n';
-            std::cout << "Total time for 500 lines: " << totalTime;
+            double totalTime = std::chrono::duration_cast<std::chrono::microseconds>(totalStop - totalStart).count();
+            std::cout << "stringReadTime " << stringReadTime / 1000000 << '\n';
+            std::cout << "slidingWindowTime " << slidingWindowTime / 1000000 << '\n';
+            std::cout << "learnTime  " << learnTime / 1000000 << '\n';
+            std::cout << "Total time for 500 lines: " << totalTime / 1000000;
 
             break;
         }
