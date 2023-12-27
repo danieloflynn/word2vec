@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <random>
 #include <vector>
+#include <chrono>
 
 #include "Word2Vec.h"
 
@@ -302,7 +303,6 @@ sigmoid(x) = 1/(1+e^(-x))
 */
 double Word2Vec::sigmoid(double num)
 {
-    std::cout << "sigmoid: " << 1 / (1 + exp(-num)) << '\n';
     return 1 / (1 + exp(-num));
 }
 
@@ -434,9 +434,16 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
     std::string text;
     int lineCount = 0;
     bool breaking = false;
+    double stringReadTime = 0.0;
+    double slidingWindowTime = 0.0;
+    double learnTime = 0.0;
+
+    auto start = std::chrono::high_resolution_clock::now();
     // Get a line
     while (getline(myFile, text))
     {
+
+        start = std::chrono::high_resolution_clock::now();
         std::vector<std::string> words;
         std::stringstream ss(text);
         std::string currWord;
@@ -454,6 +461,13 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
                 words.push_back(text);
             }
         }
+
+        auto stop = std::chrono::high_resolution_clock::now();
+        stringReadTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+
+        // Sliding window time
+
+        start = std::chrono::high_resolution_clock::now();
 
         // Check that at least 2 words are present
         if (words.size() < 2)
@@ -481,7 +495,6 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             // Make sure current word exists in dictionary
             if (dictSet.find(currWord) == dictSet.end())
             {
-                std::cout << "Skipping " << currWord << '\n';
                 continue;
             }
 
@@ -499,6 +512,12 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             {
                 nextWords.push_back(words[i + window_size]);
             }
+
+            stop = std::chrono::high_resolution_clock::now();
+            slidingWindowTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+
+            // learnTime
+            start = std::chrono::high_resolution_clock::now();
 
             // Now update the model using each of the positive context vectors
             // Prev words
@@ -524,12 +543,20 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             }
         }
 
+        stop = std::chrono::high_resolution_clock::now();
+        slidingWindowTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+
         // Save state every 5k lines trained
         if (lineCount % 1000 == 0)
         {
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
+            std::cout << "stringReadTime " << stringReadTime / 1000 << '\n';
+            std::cout << "slidingWindowTime " << slidingWindowTime / 1000 << '\n';
+            std::cout << "learnTime  " << learnTime / 1000 << '\n';
         }
         lineCount++;
+
+        start = std::chrono::high_resolution_clock::now();
     }
 }
