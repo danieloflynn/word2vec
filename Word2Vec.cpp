@@ -8,6 +8,7 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <mutex>
 
 #include "Word2Vec.h"
 
@@ -72,18 +73,18 @@ void Word2Vec::makeRandomVecs()
         for (int i = 0; i < dimension; i++)
         {
             double random_double = unif(re);
-            wordTotal += abs(random_double);
+            wordTotal += random_double * random_double;
             wordVec.push_back(random_double);
             random_double = unif(re);
-            contextTotal += abs(random_double);
+            contextTotal += random_double * random_double;
             contVec.push_back(random_double);
         }
 
         // Divide each vector by total to get softmaxed value
         for (int i = 0; i < dimension; i++)
         {
-            wordVec[i] /= wordTotal;
-            contVec[i] /= contextTotal;
+            wordVec[i] /= sqrt(wordTotal);
+            contVec[i] /= sqrt(contextTotal);
         }
 
         wordVecs[word] = wordVec;
@@ -286,13 +287,17 @@ double Word2Vec::dotProd(std::vector<double> &vec1, std::vector<double> &vec2)
     }
 
     double total = 0;
+    double vec1_len = 0;
+    double vec2_len = 0;
 
     for (int i = 0; i < vec1.size(); i++)
     {
+        vec1_len += vec1[i] * vec1[i];
+        vec2_len += vec2[i] * vec2[i];
         total += vec1[i] * vec2[i];
     }
 
-    return total;
+    return total / (sqrt(vec1_len) * sqrt(vec2_len));
 }
 
 /*
@@ -302,6 +307,19 @@ sigmoid(x) = 1/(1+e^(-x))
 double Word2Vec::sigmoid(double num)
 {
     return 1 / (1 + exp(-num));
+}
+
+void Word2Vec::softMax(std::vector<double> &vec)
+{
+    double total = 0;
+    for (double &v : vec)
+    {
+        total += abs(v);
+    }
+    for (double &v : vec)
+    {
+        v /= total;
+    }
 }
 
 /*
@@ -328,7 +346,7 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
             continue;
         }
 
-        double sim = dotProd(wVec, w.second);
+        double sim = sigmoid(dotProd(wVec, w.second));
         wordSimilarity.push_back({w.first, sim});
     }
 
@@ -543,8 +561,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             std::cout << "stringReadTime " << stringReadTime / 1000000 << '\n';
             std::cout << "slidingWindowTime " << slidingWindowTime / 1000000 << '\n';
             std::cout << "learnTime  " << learnTime / 1000000 << '\n';
-            std::cout << "Total time for 500 lines: " << totalTime / 1000000 << '\n';
-            break;
+            std::cout << "Total time for " << lineCount << " lines: " << totalTime / 1000000 << '\n';
         }
         lineCount++;
 

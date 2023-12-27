@@ -26,6 +26,8 @@ public:
     std::vector<std::pair<std::string, int>> wordFreqs;
     std::unordered_map<std::string, std::vector<double>> wordVecs;
     std::unordered_map<std::string, std::vector<double>> contextVecs;
+    std::unordered_map<std::string, std::mutex> wordVecMutexes;
+    std::unordered_map<std::string, std::mutex> contextVecMutexes;
     std::vector<std::pair<std::string, double>> unigram_freqs;
     std::discrete_distribution<> unigram_dist;
     inline int isPunctuation(char &text);
@@ -44,6 +46,7 @@ public:
     void vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2);
     double dotProd(std::vector<double> &vec1, std::vector<double> &vec2);
     double sigmoid(double num);
+    void softMax(std::vector<double> &vec);
     std::vector<std::pair<std::string, double>> calcSimilarWords(std::string word);
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
