@@ -465,15 +465,14 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         auto stop = std::chrono::high_resolution_clock::now();
         stringReadTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
 
-        // Sliding window time
-
-        start = std::chrono::high_resolution_clock::now();
-
         // Check that at least 2 words are present
         if (words.size() < 2)
         {
             continue;
         }
+        // Sliding window time
+
+        start = std::chrono::high_resolution_clock::now();
 
         // Now iterate over the sliding window
         for (int i = 0; i < words.size(); i++)
@@ -544,10 +543,10 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         }
 
         stop = std::chrono::high_resolution_clock::now();
-        slidingWindowTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+        learnTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
 
         // Save state every 5k lines trained
-        if (lineCount % 1000 == 0)
+        if (lineCount % 100 == 0)
         {
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
