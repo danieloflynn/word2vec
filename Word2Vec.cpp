@@ -516,9 +516,6 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         {
             continue;
         }
-        // Sliding window time
-
-        start = std::chrono::high_resolution_clock::now();
 
         // Now iterate over the sliding window
         for (int i = 0; i < words.size(); i++)
