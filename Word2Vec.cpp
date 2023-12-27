@@ -453,8 +453,11 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         start = std::chrono::high_resolution_clock::now();
         std::vector<std::string> words;
         std::stringstream ss(text);
+        if (lineCount % 100 == 0)
+        {
 
-        std::cout << "Line " << lineCount << '\n';
+            std::cout << "Line " << lineCount << '\n';
+        }
         // Add all the words to a vector
         while (getline(ss, text, ' '))
         {
@@ -524,7 +527,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         }
 
         // Save state every 5k lines trained
-        if (lineCount == 500)
+        if (lineCount % 10000 == 0)
         {
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
@@ -534,9 +537,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             std::cout << "stringReadTime " << stringReadTime / 1000000 << '\n';
             std::cout << "slidingWindowTime " << slidingWindowTime / 1000000 << '\n';
             std::cout << "learnTime  " << learnTime / 1000000 << '\n';
-            std::cout << "Total time for 500 lines: " << totalTime / 1000000;
-
-            break;
+            std::cout << "Total time for 500 lines: " << totalTime / 1000000 << '\n';
         }
         lineCount++;
 
