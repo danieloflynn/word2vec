@@ -511,7 +511,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         }
 
         // Save state every 5k lines trained
-        if (lineCount % 5000 == 0)
+        if (lineCount % 1000 == 0)
         {
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
