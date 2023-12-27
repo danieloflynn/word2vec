@@ -409,11 +409,17 @@ void Word2Vec::updateVectors(std::vector<double> &wVec, std::vector<double> &cPo
 
     // First, get random negative context vectors.
     std::vector<std::vector<double> *> cNegVecs;
-    updateCNegVecs(cNegVecs, wVec);
+    // updateCNegVecs(cNegVecs, wVec);
+    std::thread t1([&]
+                   { updateCNegVecs(cNegVecs, wVec); });
 
     // update positive context vectors
-    updateCPosVec(cPosVec, wVec);
+    // updateCPosVec(cPosVec, wVec);
+    std::thread t2([&]
+                   { updateCPosVec(cPosVec, wVec); });
 
+    t1.join();
+    t2.join();
     // Update the word vector
     updateWVec(wVec, cPosVec, cNegVecs);
 }
