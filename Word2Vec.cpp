@@ -450,7 +450,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         // Now iterate over the sliding window
         for (int i = 0; i < words.size(); i++)
         {
-            // If current word there, add to prev words
+            // Add old current word to previous words
             if (!currWord.empty())
             {
                 prevWords.push_back(currWord);
@@ -463,6 +463,13 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
 
             // Set the current word to the next word in the sequence
             currWord = words[i];
+
+            // Make sure current word exists in dictionary
+            if (dictSet.find(currWord) == dictSet.end())
+            {
+                std::cout << "Skipping " << currWord << '\n';
+                continue;
+            }
 
             // Add extra words to the "next words" if we're at the start
             if (i == 0)
@@ -483,22 +490,22 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             // Prev words
             for (std::string cPosWord : prevWords)
             {
-                // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
-                // {
-                //     breaking = true;
-                //     break;
-                // }
+                // Check that context word exists in dictionary
+                if (dictSet.find(cPosWord) == dictSet.end())
+                {
+                    continue;
+                }
                 updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
             }
 
             // Next words
             for (std::string cPosWord : nextWords)
             {
-                // if (wordVecs[currWord].size() == 0 || contextVecs[cPosWord].size() == 0)
-                // {
-                //     breaking = true;
-                //     break;
-                // }
+                // Check that context word exists in dictionary
+                if (dictSet.find(cPosWord) == dictSet.end())
+                {
+                    continue;
+                }
                 updateVectors(wordVecs[currWord], contextVecs[cPosWord]);
             }
         }
@@ -506,7 +513,6 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         // Save state every 5k lines trained
         if (lineCount % 5000 == 0)
         {
-            std::cout << "Training: line " << lineCount << '\n';
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
         }
