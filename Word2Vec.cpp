@@ -319,11 +319,11 @@ void Word2Vec::softMax(std::vector<double> &vec)
     double total = 0;
     for (double &v : vec)
     {
-        total += abs(v);
+        total += v * v;
     }
     for (double &v : vec)
     {
-        v /= total;
+        v /= sqrt(total);
     }
 }
 
@@ -459,8 +459,70 @@ void Word2Vec::updateVectors(std::string &wVecWord, std::string &cVecWord, std::
     (*wordVecMutexes[wVecWord]).unlock();
 }
 
-void Word2Vec::processLine(std::string text)
+/*
+Process line of text and learn n-gram
+*/
+
+void Word2Vec::processLine(std::string text, int lineCount)
 {
+
+    std::vector<std::string> words;
+    std::stringstream ss(text);
+    if (lineCount % 100 == 0)
+    {
+
+        std::cout << "Line " << lineCount << '\n';
+    }
+    // Add all the words to a vector
+    while (getline(ss, text, ' '))
+    {
+        cleanText(text);
+        if (text.size() > 0)
+        {
+
+            words.push_back(text);
+        }
+    }
+
+    // Check that at least 2 words are present
+    if (words.size() < 2)
+    {
+        return;
+    }
+
+    // Now iterate over the sliding window
+    for (int i = 0; i < words.size(); i++)
+    {
+        // If current word not in dictionary, skip
+        if (dictSet.find(words[i]) == dictSet.end())
+        {
+            continue;
+        }
+
+        // Update the model using each of the positive context vectors
+        // words before current word
+        for (int j = std::max(0, i - window_size); j < i; j++)
+        {
+            // Check that context word exists in dictionary
+            if (dictSet.find(words[j]) == dictSet.end())
+            {
+                continue;
+            }
+
+            updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
+        }
+
+        // words after current word
+        for (int j = i + 1; j < std::min(i + window_size + 1, (int)words.size()); j++)
+        {
+            // Check that context word exists in dictionary
+            if (dictSet.find(words[j]) == dictSet.end())
+            {
+                continue;
+            }
+            updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
+        }
+    }
 }
 
 /*
@@ -478,103 +540,84 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
     std::fstream myFile(trainingText);
     std::string text;
     int lineCount = 0;
-    bool breaking = false;
-    double stringReadTime = 0.0;
-    double slidingWindowTime = 0.0;
     double learnTime = 0.0;
 
     auto start = std::chrono::high_resolution_clock::now();
     auto totalStart = std::chrono::high_resolution_clock::now();
+
+    int maxThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads; // To hold the threads
+
     // Get a line
     while (getline(myFile, text))
     {
+        // Run concurrently
+        threads.emplace_back([&, text, lineCount]()
+                             { processLine(text, lineCount); });
 
-        start = std::chrono::high_resolution_clock::now();
-        std::vector<std::string> words;
-        std::stringstream ss(text);
-        if (lineCount % 100 == 0)
+        // Check periodically and rejoin
+        if (threads.size() >= maxThreads)
         {
-
-            std::cout << "Line " << lineCount << '\n';
-        }
-        // Add all the words to a vector
-        while (getline(ss, text, ' '))
-        {
-            cleanText(text);
-            if (text.size() > 0)
+            for (auto &thread : threads)
             {
-
-                words.push_back(text);
+                thread.join();
             }
+            threads.clear();
         }
 
-        auto stop = std::chrono::high_resolution_clock::now();
-        stringReadTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-
-        // Check that at least 2 words are present
-        if (words.size() < 2)
+        // Softmax every 500 lines
+        if (lineCount % 500 == 0)
         {
-            continue;
-        }
-
-        // Now iterate over the sliding window
-        for (int i = 0; i < words.size(); i++)
-        {
-            // If current word not in dictionary, skip
-            if (dictSet.find(words[i]) == dictSet.end())
+            for (std::string word : dictionary)
             {
-                continue;
+                (*contextVecMutexes[word]).lock();
+                (*wordVecMutexes[word]).lock();
             }
 
-            stop = std::chrono::high_resolution_clock::now();
-            slidingWindowTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-
-            // learnTime
-            start = std::chrono::high_resolution_clock::now();
-
-            // Now update the model using each of the positive context vectors
-            // words before current word
-            for (int j = std::max(0, i - window_size); j < i; j++)
+            for (auto &vec : wordVecs)
             {
-                // Check that context word exists in dictionary
-                if (dictSet.find(words[j]) == dictSet.end())
-                {
-                    continue;
-                }
-
-                updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
+                softMax(vec.second);
             }
 
-            // words after current word
-            for (int j = i + 1; j < std::min(i + window_size + 1, (int)words.size()); j++)
+            for (auto &vec : contextVecs)
             {
-                // Check that context word exists in dictionary
-                if (dictSet.find(words[j]) == dictSet.end())
-                {
-                    continue;
-                }
-                updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
+                softMax(vec.second);
             }
-            stop = std::chrono::high_resolution_clock::now();
-            learnTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
 
-            // Sliding window time (again)
-
-            start = std::chrono::high_resolution_clock::now();
+            for (std::string word : dictionary)
+            {
+                (*contextVecMutexes[word]).unlock();
+                (*wordVecMutexes[word]).unlock();
+            }
         }
 
         // Save state every 5k lines trained
-        if (lineCount == 500)
+        if (lineCount % 5000 == 0)
         {
+            for (auto &thread : threads)
+            {
+                thread.join();
+            }
+            threads.clear();
+
+            for (std::string word : dictionary)
+            {
+                (*contextVecMutexes[word]).lock();
+                (*wordVecMutexes[word]).lock();
+            }
+
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
+            for (std::string word : dictionary)
+            {
+                (*contextVecMutexes[word]).unlock();
+                (*wordVecMutexes[word]).unlock();
+            }
 
             auto totalStop = std::chrono::high_resolution_clock::now();
             double totalTime = std::chrono::duration_cast<std::chrono::microseconds>(totalStop - totalStart).count();
-            std::cout << "stringReadTime " << stringReadTime / 1000000 << '\n';
-            std::cout << "slidingWindowTime " << slidingWindowTime / 1000000 << '\n';
-            std::cout << "learnTime  " << learnTime / 1000000 << '\n';
             std::cout << "Total time for " << lineCount << " lines: " << totalTime / 1000000 << '\n';
+            std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         lineCount++;
 

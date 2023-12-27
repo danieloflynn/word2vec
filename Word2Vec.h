@@ -53,7 +53,7 @@ public:
     void updateCNegVecs(std::vector<std::string> &cNegWords, std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec);
     void updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs);
     void updateVectors(std::string &wVecWord, std::string &cVecWord, std::vector<double> &wVec, std::vector<double> &cPosVec);
-    void processLine(std::string text);
+    void processLine(std::string text, int lineCount);
     void train(std::string trainingText, std::string cVecOutput, std::string wVecOutput);
     void serialize(std::string outputFile);
 };
