@@ -26,8 +26,8 @@ public:
     std::vector<std::pair<std::string, int>> wordFreqs;
     std::unordered_map<std::string, std::vector<double>> wordVecs;
     std::unordered_map<std::string, std::vector<double>> contextVecs;
-    std::unordered_map<std::string, std::mutex> wordVecMutexes;
-    std::unordered_map<std::string, std::mutex> contextVecMutexes;
+    std::unordered_map<std::string, std::unique_ptr<std::mutex>> wordVecMutexes;
+    std::unordered_map<std::string, std::unique_ptr<std::mutex>> contextVecMutexes;
     std::vector<std::pair<std::string, double>> unigram_freqs;
     std::discrete_distribution<> unigram_dist;
     inline int isPunctuation(char &text);
@@ -50,9 +50,10 @@ public:
     std::vector<std::pair<std::string, double>> calcSimilarWords(std::string word);
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
-    void updateCNegVecs(std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec);
+    void updateCNegVecs(std::vector<std::string> &cNegWords, std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec);
     void updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs);
-    void updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec);
+    void updateVectors(std::string &wVecWord, std::string &cVecWord, std::vector<double> &wVec, std::vector<double> &cPosVec);
+    void processLine(std::string text);
     void train(std::string trainingText, std::string cVecOutput, std::string wVecOutput);
     void serialize(std::string outputFile);
 };

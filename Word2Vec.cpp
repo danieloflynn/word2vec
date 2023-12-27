@@ -70,11 +70,16 @@ void Word2Vec::makeRandomVecs()
         double wordTotal = 0;
         double contextTotal = 0;
 
+        // Make word and context mutexes
+        wordVecMutexes[word] = std::make_unique<std::mutex>();
+        contextVecMutexes[word] = std::make_unique<std::mutex>();
+
         for (int i = 0; i < dimension; i++)
         {
             double random_double = unif(re);
             wordTotal += random_double * random_double;
             wordVec.push_back(random_double);
+
             random_double = unif(re);
             contextTotal += random_double * random_double;
             contVec.push_back(random_double);
@@ -383,16 +388,6 @@ void Word2Vec::updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &
     vectorAdd(cNegVec, newVec);
 }
 
-void Word2Vec::updateCNegVecs(std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec)
-{
-    for (int i = 0; i < ratio_neg_context_vectors; i++)
-    {
-        std::string randWord = getRandomWord();
-        cNegVecs.push_back(&contextVecs[randWord]);
-        updateCNegVec(contextVecs[randWord], wVec);
-    }
-}
-
 /*
 Updates the word vector
 w(t+1) = w(t) - learn_rate[ [sigmoid(c_pos(t)*w(t)) - 1] c_pos + sum_all_c_neg(sigmoid(c_neg(t)*w(t)) ) c_neg ]
@@ -428,24 +423,44 @@ Takes a positive context vector and word vector.
 Creates k negative context vector.
 Updates the positive, negative and word vectors using the update equations.
 */
-void Word2Vec::updateVectors(std::vector<double> &wVec, std::vector<double> &cPosVec)
+void Word2Vec::updateVectors(std::string &wVecWord, std::string &cVecWord, std::vector<double> &wVec, std::vector<double> &cPosVec)
 {
 
+    // locks.emplace_back(wordVecMutexes[wVecWord], std::defer_lock);
+    // locks.emplace_back(contextVecMutexes[cVecWord], std::defer_lock);
     // First, get random negative context vectors.
+
     std::vector<std::vector<double> *> cNegVecs;
-    updateCNegVecs(cNegVecs, wVec);
-    // std::thread t1([&]
-    //                { updateCNegVecs(cNegVecs, wVec); });
+    std::vector<std::string> cNegWords;
+
+    // Get cNeg words and vecs
+    for (int i = 0; i < ratio_neg_context_vectors; i++)
+    {
+        std::string randWord = getRandomWord();
+        cNegWords.push_back(randWord);
+        cNegVecs.push_back(&contextVecs[randWord]);
+    }
+
+    for (int i = 0; i < cNegVecs.size(); i++)
+    {
+        (*contextVecMutexes[cNegWords[i]]).lock();
+        updateCNegVec(*(cNegVecs[i]), wVec);
+        (*contextVecMutexes[cNegWords[i]]).unlock();
+    }
 
     // update positive context vectors
+    (*contextVecMutexes[cVecWord]).lock();
     updateCPosVec(cPosVec, wVec);
-    // std::thread t2([&]
-    //                { updateCPosVec(cPosVec, wVec); });
+    (*contextVecMutexes[cVecWord]).unlock();
 
-    // t1.join();
-    // t2.join();
     // Update the word vector
+    (*wordVecMutexes[wVecWord]).lock();
     updateWVec(wVec, cPosVec, cNegVecs);
+    (*wordVecMutexes[wVecWord]).unlock();
+}
+
+void Word2Vec::processLine(std::string text)
+{
 }
 
 /*
@@ -529,7 +544,8 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
                 {
                     continue;
                 }
-                updateVectors(wordVecs[words[i]], contextVecs[words[j]]);
+
+                updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
             }
 
             // words after current word
@@ -540,7 +556,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
                 {
                     continue;
                 }
-                updateVectors(wordVecs[words[i]], contextVecs[words[j]]);
+                updateVectors(words[i], words[j], wordVecs[words[i]], contextVecs[words[j]]);
             }
             stop = std::chrono::high_resolution_clock::now();
             learnTime += std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
