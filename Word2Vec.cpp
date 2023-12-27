@@ -377,26 +377,32 @@ void Word2Vec::updateCNegVecs(std::vector<std::vector<double> *> &cNegVecs, std:
 
 /*
 Updates the word vector
-w(t+1) = w(t) - learn_rate[ [sigmoid(c_pos(t)*w(t)) - 1] c_pos + sum_all_c_neg(sigmoid(c_neg(t)*w(t)) - 1) c_neg ]
+w(t+1) = w(t) - learn_rate[ [sigmoid(c_pos(t)*w(t)) - 1] c_pos + sum_all_c_neg(sigmoid(c_neg(t)*w(t)) ) c_neg ]
+
+Do it in place to save time. ith element of w:
+w(t+1)[i] = w(t)[i] - learn_rate[ [sigmoid(c_pos(t)*w(t)) - 1] c_pos[i] + sum_all_c_neg(sigmoid(c_neg(t)*w(t)) ) c_neg[i] ]
 */
 void Word2Vec::updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVec, std::vector<std::vector<double> *> &cNegVecs)
 {
 
-    // Add the c_pos part
+    // Calculate the scalar parts
     double cPosScalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
-    std::vector<double> cPosVecPart = scalarMult(cPosVec, cPosScalar);
-    std::vector<double> newWVec = wVec;
-    vectorAdd(newWVec, cPosVecPart); // Make new word vector as we need the old one to calculate cNegVecPart
 
-    // add each cNeg vector to the new w vector
+    std::vector<double> cNegScalars;
     for (std::vector<double> *&cNegVec : cNegVecs)
     {
-        double cNegScalar = -learning_rate * (sigmoid(dotProd((*cNegVec), wVec)));
-        std::vector<double> cNegVecPart = scalarMult(*cNegVec, cNegScalar);
-        vectorAdd(newWVec, cNegVecPart);
+        cNegScalars.push_back(-learning_rate * (sigmoid(dotProd((*cNegVec), wVec))));
     }
-    // Now change wVec to the new word vec
-    wVec = newWVec;
+
+    // Iterate over word vector and add cPos and cNeg parts
+    for (int i = 0; i < wVec.size(); i++)
+    {
+        wVec[i] += cPosScalar * cPosVec[i];
+        for (int j = 0; j < cNegVecs.size(); j++)
+        {
+            wVec[i] += cNegScalars[j] * (*cNegVecs[j])[i];
+        }
+    }
 }
 
 /*
@@ -527,7 +533,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         }
 
         // Save state every 5k lines trained
-        if (lineCount % 10000 == 0)
+        if (lineCount == 500)
         {
             writeContextVecsToFile(cVecOutput);
             writeWordVecsToFile(wVecOutput);
@@ -538,6 +544,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             std::cout << "slidingWindowTime " << slidingWindowTime / 1000000 << '\n';
             std::cout << "learnTime  " << learnTime / 1000000 << '\n';
             std::cout << "Total time for 500 lines: " << totalTime / 1000000 << '\n';
+            break;
         }
         lineCount++;
 
