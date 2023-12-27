@@ -316,7 +316,7 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
             continue;
         }
 
-        double sim = sigmoid(dotProd(wVec, w.second));
+        double sim = dotProd(wVec, w.second);
         wordSimilarity.push_back({w.first, sim});
     }
 
