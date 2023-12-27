@@ -12,8 +12,8 @@ class Word2Vec
 public:
     Word2Vec(std::string fileName, std::string parseType = "wordFreq", int minCount = 1, int dimension = 64);
     int dimension;
-    const double vec_lower_bound = -10000.0;
-    const double vec_upper_bound = 10000.0;
+    const double vec_lower_bound = -1.0;
+    const double vec_upper_bound = 1.0;
     const double learning_rate = 0.1;        // Set this to 0.1 per book
     const int window_size = 2;               // number of words to look at either side of the current word
     const int ratio_neg_context_vectors = 2; // Ratio of negative to positive context vectors

@@ -64,13 +64,25 @@ void Word2Vec::makeRandomVecs()
     {
         std::vector<double> wordVec;
         std::vector<double> contVec;
+        double wordTotal = 0;
+        double contextTotal = 0;
+
         for (int i = 0; i < dimension; i++)
         {
             double random_double = unif(re);
+            wordTotal += random_double;
             wordVec.push_back(random_double);
             random_double = unif(re);
+            contextTotal += random_double;
             contVec.push_back(random_double);
         }
+
+        for (int i = 0; i < dimension; i++)
+        {
+            wordVec[i] /= wordTotal;
+            contVec[i] /= contextTotal;
+        }
+
         wordVecs[word] = wordVec;
         contextVecs[word] = contVec;
     }
@@ -289,6 +301,7 @@ sigmoid(x) = 1/(1+e^(-x))
 */
 double Word2Vec::sigmoid(double num)
 {
+    std::cout << "sigmoid: " << 1 / (1 + exp(-num)) << '\n';
     return 1 / (1 + exp(-num));
 }
 
