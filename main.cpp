@@ -15,15 +15,10 @@ int main()
 
     Word2Vec wv("dictionary.txt", "wordFreq", 500);
 
-    wv.readContextVecsFromFile("cVecs.txt");
-    wv.readWordVecsFromFile("wVecs.txt");
+    // wv.readContextVecsFromFile("cVecs.txt");
+    // wv.readWordVecsFromFile("wVecs.txt");
 
-    // for (auto &vec : wv.wordVecs)
-    // {
-    //     wv.softMax(vec.second);
-    // }
-
-    // for (int i = 150; i < 151; i++)
+    // for (int i = 150; i < 155; i++)
     // {
     //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
     //     for (int j = 0; j < 10; j++)

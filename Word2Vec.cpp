@@ -375,6 +375,7 @@ void Word2Vec::updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &
     double scalar = -learning_rate * (sigmoid(dotProd(cPosVec, wVec)) - 1);
     std::vector<double> newVec = scalarMult(wVec, scalar);
     vectorAdd(cPosVec, newVec);
+    softMax(cPosVec);
 }
 
 /*
@@ -386,6 +387,7 @@ void Word2Vec::updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &
     double scalar = -learning_rate * (sigmoid(dotProd(cNegVec, wVec)));
     std::vector<double> newVec = scalarMult(wVec, scalar);
     vectorAdd(cNegVec, newVec);
+    softMax(cNegVec);
 }
 
 /*
@@ -416,6 +418,7 @@ void Word2Vec::updateWVec(std::vector<double> &wVec, std::vector<double> &cPosVe
             wVec[i] += cNegScalars[j] * (*cNegVecs[j])[i];
         }
     }
+    softMax(wVec);
 }
 
 /*
@@ -563,32 +566,6 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
                 thread.join();
             }
             threads.clear();
-        }
-
-        // Softmax every 500 lines
-        if (lineCount % 500 == 0)
-        {
-            for (std::string word : dictionary)
-            {
-                (*contextVecMutexes[word]).lock();
-                (*wordVecMutexes[word]).lock();
-            }
-
-            for (auto &vec : wordVecs)
-            {
-                softMax(vec.second);
-            }
-
-            for (auto &vec : contextVecs)
-            {
-                softMax(vec.second);
-            }
-
-            for (std::string word : dictionary)
-            {
-                (*contextVecMutexes[word]).unlock();
-                (*wordVecMutexes[word]).unlock();
-            }
         }
 
         // Save state every 5k lines trained
