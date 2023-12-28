@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <queue>
 
 #include "Word2Vec.h"
 
@@ -351,7 +352,7 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
             continue;
         }
 
-        double sim = sigmoid(dotProd(wVec, w.second));
+        double sim = dotProd(wVec, w.second);
         wordSimilarity.push_back({w.first, sim});
     }
 
@@ -549,33 +550,28 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
     auto totalStart = std::chrono::high_resolution_clock::now();
 
     int maxThreads = std::thread::hardware_concurrency();
-    std::vector<std::thread> threads; // To hold the threads
+    std::queue<std::thread> threads; // To hold the threads
 
     // Get a line
     while (getline(myFile, text))
     {
         // Run concurrently
-        threads.emplace_back([&, text, lineCount]()
-                             { processLine(text, lineCount); });
+        threads.emplace([&, text, lineCount]()
+                        { processLine(text, lineCount); });
 
         // Check periodically and rejoin
         if (threads.size() >= maxThreads)
         {
-            for (auto &thread : threads)
-            {
-                thread.join();
-            }
-            threads.clear();
+            threads.front().join();
+            threads.pop();
         }
 
         // Save state every 5k lines trained
         if (lineCount % 5000 == 0)
         {
-            for (auto &thread : threads)
-            {
-                thread.join();
-            }
-            threads.clear();
+
+            threads.front().join();
+            threads.pop();
 
             for (std::string word : dictionary)
             {

@@ -10,7 +10,7 @@
 class Word2Vec
 {
 public:
-    Word2Vec(std::string fileName, std::string parseType = "wordFreq", int minCount = 1, int dimension = 64);
+    Word2Vec(std::string fileName, std::string parseType = "wordFreq", int minCount = 1, int dimension = 256);
     int dimension;
     const double vec_lower_bound = -1.0;
     const double vec_upper_bound = 1.0;

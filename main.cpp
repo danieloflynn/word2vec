@@ -13,15 +13,16 @@ int main()
     // wf.serialize("dictionary.txt");
     // std::cout << "Finished getting freq dictionary" << '\n';
 
-    Word2Vec wv("dictionary.txt", "wordFreq", 500);
+    Word2Vec wv("dictionary.txt", "wordFreq", 3000);
 
     // wv.readContextVecsFromFile("cVecs.txt");
     // wv.readWordVecsFromFile("wVecs.txt");
 
-    // for (int i = 150; i < 155; i++)
+    // for (int i = 0; i < 6550; i++)
     // {
+
     //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
-    //     for (int j = 0; j < 10; j++)
+    //     for (int j = 0; j < 5; j++)
     //     {
     //         std::cout << wv.dictionary[i] << " " << v[j].first << " " << v[j].second << '\n';
     //     }
