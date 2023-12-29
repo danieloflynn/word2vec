@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -92,7 +93,7 @@ void WordFreq::sortWordFreqs()
         return (a.second > b.second);
     };
     sortedWordFreq.assign(wordFreqs.begin(), wordFreqs.end());
-    sort(sortedWordFreq.begin(), sortedWordFreq.end(), cmp);
+    std::sort(sortedWordFreq.begin(), sortedWordFreq.end(), cmp);
 }
 
 void WordFreq::serialize(std::string fileName)

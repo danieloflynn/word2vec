@@ -1,11 +1,21 @@
 #ifndef WORD2VEC_H
 #define WORD2VEC_H
 
+#include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <iostream>
 #include <string>
-#include <vector>
+#include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <random>
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <memory>
+#include <queue>
+#include <unordered_set>
 
 class Word2Vec
 {

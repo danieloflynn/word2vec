@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -9,7 +10,9 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <memory>
 #include <queue>
+#include <unordered_set>
 
 #include "Word2Vec.h"
 
@@ -362,7 +365,7 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
     {
         return (a.second > b.second);
     };
-    sort(wordSimilarity.begin(), wordSimilarity.end(), cmp);
+    std::sort(wordSimilarity.begin(), wordSimilarity.end(), cmp);
     return wordSimilarity;
 }
 
