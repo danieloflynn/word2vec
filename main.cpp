@@ -8,10 +8,10 @@
 int main()
 {
 
-    // WordFreq wf("wiki.txt");
-    // wf.countFreqFromFile();
-    // wf.serialize("dictionary.txt");
-    // std::cout << "Finished getting freq dictionary" << '\n';
+    WordFreq wf("wiki.txt");
+    wf.countFreqFromFile();
+    wf.serialize("dictionary.txt");
+    std::cout << "Finished getting freq dictionary" << '\n';
 
     Word2Vec wv("dictionary.txt", "wordFreq", 3000);
 

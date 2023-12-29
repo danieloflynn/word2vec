@@ -14,6 +14,7 @@
 #include <queue>
 #include <unordered_set>
 
+#include "ThreadPool.h"
 #include "Word2Vec.h"
 
 Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, int dimension)
@@ -553,24 +554,18 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
     auto totalStart = std::chrono::high_resolution_clock::now();
 
     int maxThreads = std::thread::hardware_concurrency();
-    std::queue<std::thread> threads; // To hold the threads
+    ThreadPool threads;
+    threads.Start();
 
     // Get a line
     while (getline(myFile, text))
     {
         // Run concurrently
-        threads.emplace([&, text, lineCount]()
-                        { processLine(text, lineCount); });
-
-        // Check periodically and rejoin
-        if (threads.size() >= maxThreads)
-        {
-            threads.front().join();
-            threads.pop();
-        }
+        threads.QueueJob([&, text, lineCount]()
+                         { processLine(text, lineCount); });
 
         // Save state every 5k lines trained
-        if (lineCount % 5000 == 0)
+        if (lineCount % 20000 == 0)
         {
 
             threads.front().join();
