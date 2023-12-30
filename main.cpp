@@ -8,10 +8,10 @@
 int main()
 {
 
-    WordFreq wf("wiki.txt");
-    wf.countFreqFromFile();
-    wf.serialize("dictionary.txt");
-    std::cout << "Finished getting freq dictionary" << '\n';
+    // WordFreq wf("wiki.txt");
+    // wf.countFreqFromFile();
+    // wf.serialize("dictionary.txt");
+    // std::cout << "Finished getting freq dictionary" << '\n';
 
     Word2Vec wv("dictionary.txt", "wordFreq", 3000);
 
@@ -31,8 +31,8 @@ int main()
     wv.makeRandomVecs();
     wv.makeUnigramFreqs();
     wv.train("wiki.txt", "cVecs.txt", "wVecs.txt");
-    // wv.writeContextVecsToFile("cVecs.txt");
-    // wv.writeWordVecsToFile("wVecs.txt");
+    wv.writeContextVecsToFile("cVecs.txt");
+    wv.writeWordVecsToFile("wVecs.txt");
 
     return 0;
 }

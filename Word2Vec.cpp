@@ -554,23 +554,22 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
     auto totalStart = std::chrono::high_resolution_clock::now();
 
     int maxThreads = std::thread::hardware_concurrency();
-    ThreadPool threads;
-    threads.Start();
+    ThreadPool threadpool; // To hold the
+    threadpool.Start();
 
     // Get a line
     while (getline(myFile, text))
     {
         // Run concurrently
-        threads.QueueJob([&, text, lineCount]()
-                         { processLine(text, lineCount); });
+        threadpool.QueueJob([&, text, lineCount]()
+                            { processLine(text, lineCount); });
 
         // Save state every 5k lines trained
         if (lineCount % 20000 == 0)
         {
 
-            threads.front().join();
-            threads.pop();
-
+            std::cout << "Waiting for threads to stop" << '\n';
+            threadpool.Stop();
             for (std::string word : dictionary)
             {
                 (*contextVecMutexes[word]).lock();
@@ -588,7 +587,9 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
             auto totalStop = std::chrono::high_resolution_clock::now();
             double totalTime = std::chrono::duration_cast<std::chrono::microseconds>(totalStop - totalStart).count();
             std::cout << "Total time for " << lineCount << " lines: " << totalTime / 1000000 << '\n';
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+
+            // Start the threads again
+            threadpool.Start();
         }
         lineCount++;
 
