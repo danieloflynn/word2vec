@@ -20,7 +20,6 @@ int main()
 
     // for (int i = 0; i < 6550; i++)
     // {
-
     //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
     //     for (int j = 0; j < 5; j++)
     //     {
