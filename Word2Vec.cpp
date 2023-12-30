@@ -596,3 +596,32 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
         start = std::chrono::high_resolution_clock::now();
     }
 }
+
+/*Filter out non nouns from a list of known nouns*/
+void Word2Vec::filterNonNouns(std::string nounFile)
+{
+    // Read in text
+    std::fstream myFile(nounFile);
+    std::string text;
+
+    std::unordered_map<std::string, std::vector<double>> newWordVecs;
+    std::unordered_map<std::string, std::vector<double>> newContextVecs;
+    std::vector<std::string> newDictionary;
+    std::unordered_set<std::string> newDictSet;
+
+    while (getline(myFile, text))
+    {
+        if (dictSet.find(text) != dictSet.end())
+        {
+            newWordVecs[text] = wordVecs[text];
+            newContextVecs[text] = contextVecs[text];
+            newDictSet.insert(text);
+            newDictionary.push_back(text);
+        }
+    }
+
+    wordVecs = newWordVecs;
+    contextVecs = newContextVecs;
+    dictSet = newDictSet;
+    dictionary = newDictionary;
+}

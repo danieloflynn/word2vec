@@ -20,7 +20,7 @@ void ThreadPool::Start()
     int maxThreads = std::thread::hardware_concurrency(); // One thread for every hardware thread
     for (int i = 0; i < maxThreads; i++)
     {
-        threads.emplace_back(std::thread(ThreadPool::ThreadLoop, this));
+        threads.emplace_back(std::thread(std::bind(&ThreadPool::ThreadLoop, this)));
     }
 }
 

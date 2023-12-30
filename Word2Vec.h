@@ -65,7 +65,7 @@ public:
     void updateVectors(std::string &wVecWord, std::string &cVecWord, std::vector<double> &wVec, std::vector<double> &cPosVec);
     void processLine(std::string text, int lineCount);
     void train(std::string trainingText, std::string cVecOutput, std::string wVecOutput);
-    void serialize(std::string outputFile);
+    void filterNonNouns(std::string nounFile);
 };
 
 #endif

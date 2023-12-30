@@ -15,9 +15,10 @@ int main()
 
     Word2Vec wv("dictionary.txt", "wordFreq", 3000);
 
-    // wv.readContextVecsFromFile("cVecs.txt");
-    // wv.readWordVecsFromFile("wVecs.txt");
-
+    wv.readContextVecsFromFile("cVecs.txt");
+    wv.readWordVecsFromFile("wVecs.txt");
+    wv.filterNonNouns("nouns.txt");
+    std::cout << wv.contextVecs.size();
     // for (int i = 0; i < 6550; i++)
     // {
     //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
@@ -27,11 +28,11 @@ int main()
     //     }
     // }
 
-    wv.makeRandomVecs();
-    wv.makeUnigramFreqs();
-    wv.train("wiki.txt", "cVecs.txt", "wVecs.txt");
-    wv.writeContextVecsToFile("cVecs.txt");
-    wv.writeWordVecsToFile("wVecs.txt");
+    // wv.makeRandomVecs();
+    // wv.makeUnigramFreqs();
+    // wv.train("wiki.txt", "cVecs.txt", "wVecs.txt");
+    // wv.writeContextVecsToFile("cVecs.txt");
+    // wv.writeWordVecsToFile("wVecs.txt");
 
     return 0;
 }
