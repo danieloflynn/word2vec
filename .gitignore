@@ -1,6 +1,7 @@
 *.out
 /output.out.dSYM/
 /.vscode/
+/backup/
 .DS_Store
 wikipedia.xml
 *.yml

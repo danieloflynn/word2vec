@@ -565,7 +565,7 @@ void Word2Vec::train(std::string trainingText, std::string cVecOutput, std::stri
                             { processLine(text, lineCount); });
 
         // Save state every 5k lines trained
-        if (lineCount % 20000 == 0)
+        if (lineCount % 200000 == 0)
         {
 
             std::cout << "Waiting for threads to stop" << '\n';
