@@ -4,21 +4,24 @@
 
 #include "WordFreq.h"
 #include "Word2Vec.h"
+#include "MongoDb_handler.h"
 
 int main()
 {
 
+    MongoDb_handler mongo("URI");
     // WordFreq wf("wiki.txt");
     // wf.countFreqFromFile();
     // wf.serialize("dictionary.txt");
     // std::cout << "Finished getting freq dictionary" << '\n';
 
-    Word2Vec wv("./lib/files/dictionary.txt", "wordFreq", 3000);
+    // Word2Vec wv("./lib/files/dictionary.txt", "wordFreq", 3000);
 
-    wv.readContextVecsFromFile("./lib/files/cVecs2.txt");
-    wv.readWordVecsFromFile("./lib/files/wVecs2.txt");
-    wv.filterNonNouns("./lib/files/nouns.txt");
-    std::cout << wv.contextVecs.size();
+    // wv.readContextVecsFromFile("./lib/files/cVecs2.txt");
+    // wv.readWordVecsFromFile("./lib/files/wVecs2.txt");
+    // wv.filterNonNouns("./lib/files/nouns.txt");
+    // std::cout << wv.contextVecs.size();
+
     // for (int i = 0; i < 6550; i++)
     // {
     //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);

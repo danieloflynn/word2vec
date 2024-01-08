@@ -8,3 +8,6 @@ wikipedia.xml
 *.plist
 *.txt
 *.exe
+
+
+/mongo-cxx-driver-r3.9.0/
