@@ -58,6 +58,7 @@ public:
     double sigmoid(double num);
     void softMax(std::vector<double> &vec);
     std::vector<std::pair<std::string, double>> calcSimilarWords(std::string word);
+    std::string wordSimToJson(std::string word, std::vector<std::pair<std::string, double>> &similarWords);
     void updateCPosVec(std::vector<double> &cPosVec, std::vector<double> &wVec);
     void updateCNegVec(std::vector<double> &cNegVec, std::vector<double> &wVec);
     void updateCNegVecs(std::vector<std::string> &cNegWords, std::vector<std::vector<double> *> &cNegVecs, std::vector<double> &wVec);

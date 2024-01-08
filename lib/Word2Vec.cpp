@@ -372,6 +372,27 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
 }
 
 /*
+Converts word similarity to JSON string
+*/
+std::string Word2Vec::wordSimToJson(std::string word, std::vector<std::pair<std::string, double>> &similarWords)
+{
+    std::string json = "{ \n";
+    json += "\"word\" : \"" + word + "\", \n";
+    json += "\"similarities\" : {\n";
+
+    for (int i = 0; i < similarWords.size(); i++)
+    {
+        json += "\"" + similarWords[i].first + "\" :  {\n";
+        json += "\"rank\" : " + std::to_string(i + 1) + ", \n";
+        json += "\"similarity\" : \"" + std::to_string(similarWords[i].second) + "\" \n},";
+    }
+
+    json += "} \n }";
+
+    return json;
+}
+
+/*
 Updates the positive context vector.
 c_pos(t+1) = c_pos(t) - learn_rate * [sigmoid(c_neg(t)*w(t)) - 1] w(t)
 */
