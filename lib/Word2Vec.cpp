@@ -157,6 +157,7 @@ void Word2Vec::readContextVecsFromFile(std::string fileName)
     // Get line
     while (getline(myFile, text))
     {
+
         std::vector<double> vec;
 
         // First item in line is the word

@@ -13,11 +13,11 @@ int main()
     // wf.serialize("dictionary.txt");
     // std::cout << "Finished getting freq dictionary" << '\n';
 
-    Word2Vec wv("dictionary.txt", "wordFreq", 3000);
+    Word2Vec wv("./lib/files/dictionary.txt", "wordFreq", 3000);
 
-    wv.readContextVecsFromFile("cVecs.txt");
-    wv.readWordVecsFromFile("wVecs.txt");
-    wv.filterNonNouns("nouns.txt");
+    wv.readContextVecsFromFile("./lib/files/cVecs2.txt");
+    wv.readWordVecsFromFile("./lib/files/wVecs2.txt");
+    wv.filterNonNouns("./lib/files/nouns.txt");
     std::cout << wv.contextVecs.size();
     // for (int i = 0; i < 6550; i++)
     // {
