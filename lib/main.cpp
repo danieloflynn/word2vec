@@ -19,14 +19,13 @@ int main()
     wv.readWordVecsFromFile("./lib/files/wVecs2.txt");
     wv.filterNonNouns("./lib/files/nouns.txt");
     std::cout << wv.contextVecs.size();
-    // for (int i = 0; i < 6550; i++)
-    // {
-    //     std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
-    //     for (int j = 0; j < 5; j++)
-    //     {
-    //         std::cout << wv.dictionary[i] << " " << v[j].first << " " << v[j].second << '\n';
-    //     }
-    // }
+    for (int i = 71; i < 80; i++)
+    {
+
+        std::ofstream newFile("out" + std::to_string(i) + ".json");
+        std::vector<std::pair<std::string, double>> v = wv.calcSimilarWords(wv.dictionary[i]);
+        newFile << wv.wordSimToJson(wv.dictionary[i], v);
+    }
 
     // wv.makeRandomVecs();
     // wv.makeUnigramFreqs();
