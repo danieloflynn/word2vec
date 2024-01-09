@@ -382,7 +382,7 @@ std::string Word2Vec::wordSimToJson(std::string word, std::vector<std::pair<std:
 
     for (int i = 0; i < similarWords.size(); i++)
     {
-        json += "\"simWord\" : \"" + similarWords[i].first + "\" :  {\n";
+        json += "{\n\"simWord\" : \"" + similarWords[i].first + "\",\n  ";
         json += "\"rank\" : " + std::to_string(i + 1) + ", \n";
         json += "\"similarity\" : \"" + std::to_string(similarWords[i].second) + "\" \n},";
     }
