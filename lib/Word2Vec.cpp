@@ -41,11 +41,9 @@ Word2Vec::Word2Vec(std::string fileName, std::string parseType, int minCount, in
 }
 
 // Returns false if char is a num, letter, or -, true otherwise
+// TODO: allow "-"
 inline int Word2Vec::isPunctuation(char &text)
 {
-    // if(text == '-'){
-    //     return 0;
-    // }
     return ispunct(text);
 }
 
@@ -59,7 +57,7 @@ void Word2Vec::cleanText(std::string &text)
 }
 
 /*
-Makes random word and context vectors for each word in the dictionary
+Makes random initial word and context vectors for each word in the dictionary
 These will be optimized in training
 */
 void Word2Vec::makeRandomVecs()
@@ -123,11 +121,13 @@ void Word2Vec::writeContextVecsToFile(std::string fileName)
     newFile.close();
 }
 
+// Writes word vectors to a file.
 void Word2Vec::writeWordVecsToFile(std::string fileName)
 {
     std::ofstream newFile(fileName);
     for (auto &word : wordVecs)
     {
+        // Skip empty word vectors
         if (word.first != "")
         {
             newFile << word.first << " ";
@@ -145,7 +145,6 @@ void Word2Vec::writeWordVecsToFile(std::string fileName)
 /*Reads in the context vectors from file
 Context vec consists of word, followed vector of space delimited doubles
 */
-
 void Word2Vec::readContextVecsFromFile(std::string fileName)
 {
     std::cout << "Reading in context vectors..." << '\n';
@@ -165,7 +164,6 @@ void Word2Vec::readContextVecsFromFile(std::string fileName)
         getline(ss, word, ' ');
         if (dictSet.find(word) == dictSet.end())
         {
-            // std::cout << word << " not in dict" << '\n';
             continue;
         }
 
@@ -288,6 +286,8 @@ void Word2Vec::vectorAdd(std::vector<double> &vec1, std::vector<double> &vec2)
 }
 
 // Gets the dot product of two vectors
+// Per the book this is actually the cosine, not just the dot product
+// i.e. we divide by the magnitude of both vectors after performing the dot product
 double Word2Vec::dotProd(std::vector<double> &vec1, std::vector<double> &vec2)
 {
 
@@ -320,13 +320,16 @@ double Word2Vec::sigmoid(double num)
     return 1 / (1 + exp(-num));
 }
 
+// Normalizes a vector input
 void Word2Vec::softMax(std::vector<double> &vec)
 {
+    // Get the magnitude of the vector^2
     double total = 0;
     for (double &v : vec)
     {
         total += v * v;
     }
+    // Divide each element in the vector by the magnitude
     for (double &v : vec)
     {
         v /= sqrt(total);
@@ -347,11 +350,11 @@ std::vector<std::pair<std::string, double>> Word2Vec::calcSimilarWords(std::stri
     }
 
     std::vector<std::pair<std::string, double>> wordSimilarity;
-
     std::vector<double> wVec = wordVecs[word];
 
     for (auto w : wordVecs)
     {
+        // Skip if both words are the same
         if (w.first == word)
         {
             continue;
@@ -456,8 +459,6 @@ Updates the positive, negative and word vectors using the update equations.
 void Word2Vec::updateVectors(std::string &wVecWord, std::string &cVecWord, std::vector<double> &wVec, std::vector<double> &cPosVec)
 {
 
-    // locks.emplace_back(wordVecMutexes[wVecWord], std::defer_lock);
-    // locks.emplace_back(contextVecMutexes[cVecWord], std::defer_lock);
     // First, get random negative context vectors.
 
     std::vector<std::vector<double> *> cNegVecs;
